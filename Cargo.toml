@@ -1,0 +1,15 @@
+[package]
+name = "ndsd-play"
+version = "0.1.0"
+edition = "2024"
+description = "A lightweight player in rust for native dsd playback over compatible devices."
+license = "Apache-2.0"
+repository = "https://github.com/KGAFT/ndsd-play"
+readme = "README.md"
+categories = ["multimedia::audio"]
+keywords = ["dsd", "alsa", "native", "no-pcm-conversion", "asio"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+ndsd-playback = "0.3"
+tokio = {version = "1", features=["full"]}
