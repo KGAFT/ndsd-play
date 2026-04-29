@@ -21,6 +21,8 @@ enum Command {
     /// Example: ndsd-play open <device_id> <path_to_file>
     /// Real world example: ndsd-play open 1 "/mnt/hdd/Music/Alphaville - Forever Young (Remastered) (1984_2019) [LP] DSD128/Alphaville - Forever Young (Remastered) (1984_2019) [LP] DSD128.dff"
     Open { device: u32, file: String },
+    ///Displays the current version of ndsd-play
+    Version
 }
 
 #[tokio::main]
@@ -50,6 +52,9 @@ async fn main() {
         }
         Command::Open { device, file } => {
             open_file_and_play(file, device).await;
+        },
+        Command::Version => {
+            println!("ndsd-play version is: {}, dst decoding is supported", env!("CARGO_PKG_VERSION"));
         }
     }
 }
@@ -70,9 +75,12 @@ async fn open_file_and_play(path: String, device: u32) {
     player.load_new_track(path.as_str()).await;
     player.start().await;
     sleep(Duration::from_millis(2500)).await;
+    if let Some(meta) = player.get_current_file_meta().await{
+        meta.pretty_print();
+    }
     println!("Control playback by entering commands from the list below");
     println!(
-        "Controls: (Pause/Play - p), (Seek - enter number in float like(0.1-0.9)), (Get current progress - e), (Stop - s)"
+        "Controls: (Pause/Play - p), (Seek - enter number in float like(0.1-0.9)), (Get current progress - e), (Stop - s), (Print current track data - m)"
     );
     let mut paused = false;
     while player.is_playing().await {
@@ -113,6 +121,14 @@ async fn open_file_and_play(path: String, device: u32) {
             's' => {
                 player.stop().await;
                 break;
+            }
+            'm' => {
+                if let Some(meta) = player.get_current_file_meta().await{
+                    meta.pretty_print();
+                } else {
+                    println!("Failed to get current track data");
+                }
+                println!("Format is {:?}", player.get_format_info().await);
             }
             _ => {
                 eprintln!("invalid command");
